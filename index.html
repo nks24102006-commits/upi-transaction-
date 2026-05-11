@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UPI Transaction Analytics - Churn Prediction & Failure Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <i class="fas fa-mobile-alt"></i>
+                <span>UPI Transaction Analytics</span>
+            </div>
+            <ul class="nav-links">
+                <li><a href="#dashboard" class="nav-link active">Dashboard</a></li>
+                <li><a href="#upload" class="nav-link">Upload Dataset</a></li>
+                <li><a href="#analytics" class="nav-link">Analytics</a></li>
+                <li><a href="#risks" class="nav-link">Risk Analysis</a></li>
+                <li><a href="#insights" class="nav-link">Insights</a></li>
+                <li><a href="#reports" class="nav-link">Reports</a></li>
+            </ul>
+            <div class="nav-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Predict & Prevent Payment Churn</h1>
+            <p>Real-time UPI failure analysis and customer churn prediction system</p>
+            <button class="cta-button">View Dashboard</button>
+        </div>
+    </section>
+
+    <!-- Upload Dataset Section -->
+    <section id="upload" class="upload-section">
+        <div class="container">
+            <h2 class="section-title">Upload & Analyze Dataset</h2>
+            <p class="section-subtitle">Upload your UPI transaction data for instant analytics and insights</p>
+
+            <!-- Upload Area -->
+            <div class="upload-container">
+                <div class="upload-area" id="uploadArea">
+                    <div class="upload-icon">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                    </div>
+                    <h3>Drag & Drop CSV File Here</h3>
+                    <p>or <span class="upload-link" id="browseBtn">browse files</span></p>
+                    <p class="upload-formats">Supported formats: CSV, Excel (.xlsx)</p>
+                    <input type="file" id="fileInput" accept=".csv,.xlsx" style="display: none;">
+                </div>
+                <div class="upload-actions">
+                    <button class="analyze-btn" id="analyzeBtn" disabled>
+                        <i class="fas fa-chart-line"></i> Analyze Data
+                    </button>
+                    <button class="clear-btn" id="clearBtn" disabled>
+                        <i class="fas fa-trash"></i> Clear Data
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Validation Status -->
+            <div class="validation-status" id="validationStatus" style="display: none;">
+                <div class="validation-header">
+                    <h4>Data Validation</h4>
+                    <div class="validation-status-icon" id="validationIcon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                </div>
+                <div class="validation-details" id="validationDetails"></div>
+            </div>
+
+            <!-- Dataset Preview -->
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <div class="preview-header">
+                    <h3>Dataset Preview</h3>
+                    <div class="preview-controls">
+                        <div class="search-box">
+                            <input type="text" id="searchInput" placeholder="Search transactions...">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="filter-controls">
+                            <select id="bankFilter">
+                                <option value="">All Banks</option>
+                            </select>
+                            <select id="statusFilter">
+                                <option value="">All Status</option>
+                                <option value="Success">Success</option>
+                                <option value="Failed">Failed</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="dataTable">
+                        <thead id="tableHead"></thead>
+                        <tbody id="tableBody"></tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination"></div>
+            </div>
+
+            <!-- AI Insights Section -->
+            <div class="insights-section-upload" id="insightsSection" style="display: none;">
+                <h3>AI-Powered Insights</h3>
+                <div class="insights-grid-upload" id="insightsGrid"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard Section -->
+    <section id="dashboard" class="dashboard-section">
+        <div class="container">
+            <h2 class="section-title">Executive Dashboard</h2>
+            
+            <!-- KPI Cards -->
+            <div class="kpi-grid">
+                <!-- Card 1: Total Transactions -->
+                <div class="kpi-card success">
+                    <div class="kpi-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>Total Transactions</h3>
+                        <p class="kpi-value">12,847</p>
+                        <span class="kpi-label">All-time volume</span>
+                    </div>
+                </div>
+
+                <!-- Card 2: Failure Rate -->
+                <div class="kpi-card danger">
+                    <div class="kpi-icon">
+                        <i class="fas fa-times-circle"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>Failure Rate</h3>
+                        <p class="kpi-value">8.42%</p>
+                        <span class="kpi-label">Current month</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: Churned Users -->
+                <div class="kpi-card warning">
+                    <div class="kpi-icon">
+                        <i class="fas fa-user-slash"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>Churned Users</h3>
+                        <p class="kpi-value">247</p>
+                        <span class="kpi-label">Last 30 days</span>
+                    </div>
+                </div>
+
+                <!-- Card 4: High-Risk Users -->
+                <div class="kpi-card alert">
+                    <div class="kpi-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="kpi-content">
+                        <h3>High-Risk Users</h3>
+                        <p class="kpi-value">156</p>
+                        <span class="kpi-label">Require intervention</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Grid -->
+            <div class="charts-grid">
+                <!-- Hourly Failures Chart -->
+                <div class="chart-container">
+                    <h3>Failures by Hour</h3>
+                    <canvas id="hourlyFailuresChart"></canvas>
+                </div>
+
+                <!-- Bank Performance Chart -->
+                <div class="chart-container">
+                    <h3>Bank Performance</h3>
+                    <canvas id="bankPerformanceChart"></canvas>
+                </div>
+
+                <!-- Success Rate Chart -->
+                <div class="chart-container">
+                    <h3>Success vs Failure</h3>
+                    <canvas id="successFailureChart"></canvas>
+                </div>
+
+                <!-- Risk Distribution Chart -->
+                <div class="chart-container">
+                    <h3>User Risk Distribution</h3>
+                    <canvas id="riskDistributionChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Advanced Analytics Section -->
+    <section id="analytics" class="analytics-section">
+        <div class="container">
+            <h2 class="section-title">Advanced Analytics</h2>
+
+            <!-- Heatmap Section -->
+            <div class="analytics-card">
+                <h3>Bank × Hour Failure Heatmap</h3>
+                <p class="subtitle">Identify bottlenecks: Which banks fail most during peak hours?</p>
+                <div class="heatmap-container">
+                    <table class="heatmap-table">
+                        <thead>
+                            <tr>
+                                <th>Bank</th>
+                                <th>18:00</th>
+                                <th>19:00</th>
+                                <th>20:00</th>
+                                <th>21:00</th>
+                                <th>22:00</th>
+                                <th>23:00</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong>SBI</strong></td>
+                                <td class="heat-low">2</td>
+                                <td class="heat-medium">5</td>
+                                <td class="heat-high">12</td>
+                                <td class="heat-critical">28</td>
+                                <td class="heat-critical">35</td>
+                                <td class="heat-high">18</td>
+                            </tr>
+                            <tr>
+                                <td><strong>ICICI</strong></td>
+                                <td class="heat-low">1</td>
+                                <td class="heat-low">3</td>
+                                <td class="heat-medium">8</td>
+                                <td class="heat-high">14</td>
+                                <td class="heat-high">12</td>
+                                <td class="heat-medium">6</td>
+                            </tr>
+                            <tr>
+                                <td><strong>HDFC</strong></td>
+                                <td class="heat-low">0</td>
+                                <td class="heat-low">2</td>
+                                <td class="heat-low">4</td>
+                                <td class="heat-medium">7</td>
+                                <td class="heat-medium">9</td>
+                                <td class="heat-low">3</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div class="heatmap-legend">
+                        <span class="legend-item"><span class="legend-color heat-low"></span> 0-5 failures</span>
+                        <span class="legend-item"><span class="legend-color heat-medium"></span> 6-12 failures</span>
+                        <span class="legend-item"><span class="legend-color heat-high"></span> 13-25 failures</span>
+                        <span class="legend-item"><span class="legend-color heat-critical"></span> 26+ failures</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transaction Timeline -->
+            <div class="analytics-card">
+                <h3>24-Hour Transaction Timeline</h3>
+                <div class="timeline-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Risk Analysis Section -->
+    <section id="risks" class="risks-section">
+        <div class="container">
+            <h2 class="section-title">Risk Segmentation</h2>
+
+            <!-- Risk Cards -->
+            <div class="risk-grid">
+                <!-- High Risk -->
+                <div class="risk-card high-risk">
+                    <div class="risk-header">
+                        <i class="fas fa-skull-crossbones"></i>
+                        <h3>High Risk</h3>
+                    </div>
+                    <div class="risk-body">
+                        <p class="risk-count">156 Users</p>
+                        <p class="risk-description">3+ failed transactions</p>
+                        <div class="risk-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Avg Failures:</span>
+                                <span class="metric-value">4.2</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Churn Rate:</span>
+                                <span class="metric-value">68%</span>
+                            </div>
+                        </div>
+                        <button class="risk-action danger">View Users</button>
+                    </div>
+                </div>
+
+                <!-- Medium Risk -->
+                <div class="risk-card medium-risk">
+                    <div class="risk-header">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <h3>Medium Risk</h3>
+                    </div>
+                    <div class="risk-body">
+                        <p class="risk-count">342 Users</p>
+                        <p class="risk-description">2 failed transactions</p>
+                        <div class="risk-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Avg Failures:</span>
+                                <span class="metric-value">2.0</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Churn Rate:</span>
+                                <span class="metric-value">35%</span>
+                            </div>
+                        </div>
+                        <button class="risk-action warning">View Users</button>
+                    </div>
+                </div>
+
+                <!-- Low Risk -->
+                <div class="risk-card low-risk">
+                    <div class="risk-header">
+                        <i class="fas fa-check-circle"></i>
+                        <h3>Low Risk</h3>
+                    </div>
+                    <div class="risk-body">
+                        <p class="risk-count">1,028 Users</p>
+                        <p class="risk-description">0-1 failed transactions</p>
+                        <div class="risk-metrics">
+                            <div class="metric">
+                                <span class="metric-label">Avg Failures:</span>
+                                <span class="metric-value">0.3</span>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-label">Churn Rate:</span>
+                                <span class="metric-value">8%</span>
+                            </div>
+                        </div>
+                        <button class="risk-action success">View Users</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Churn Risk Matrix -->
+            <div class="analytics-card">
+                <h3>Churn Risk Matrix</h3>
+                <p class="subtitle">Risk Level vs Churn Status - Find intervention targets</p>
+                <div class="matrix-container">
+                    <canvas id="churnMatrixChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Key Insights Section -->
+    <section id="insights" class="insights-section">
+        <div class="container">
+            <h2 class="section-title">Key Insights & Recommendations</h2>
+
+            <div class="insights-grid">
+                <!-- Insight 1 -->
+                <div class="insight-card">
+                    <div class="insight-icon critical">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <h3>Peak Failure Hours</h3>
+                    <p><strong>21:00 - 22:00</strong> show 340% higher failures</p>
+                    <p class="insight-detail">Traffic congestion during dinner hours. Recommend load balancing or API optimization.</p>
+                </div>
+
+                <!-- Insight 2 -->
+                <div class="insight-card">
+                    <div class="insight-icon critical">
+                        <i class="fas fa-bank"></i>
+                    </div>
+                    <h3>Bank Performance Crisis</h3>
+                    <p><strong>SBI: 47.3%</strong> failure rate vs HDFC: 3.2%</p>
+                    <p class="insight-detail">SBI Server API requires urgent investigation and partnership escalation.</p>
+                </div>
+
+                <!-- Insight 3 -->
+                <div class="insight-card">
+                    <div class="insight-icon warning">
+                        <i class="fas fa-user-slash"></i>
+                    </div>
+                    <h3>Churn Risk Users</h3>
+                    <p><strong>247 users</strong> churned after final transaction failure</p>
+                    <p class="insight-detail">Implement re-engagement campaigns and discount incentives for recovery.</p>
+                </div>
+
+                <!-- Insight 4 -->
+                <div class="insight-card">
+                    <div class="insight-icon alert">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>High-Risk Trajectory</h3>
+                    <p><strong>156 high-risk users</strong> have 68% churn probability</p>
+                    <p class="insight-detail">Prioritize for proactive support and enhanced monitoring.</p>
+                </div>
+
+                <!-- Insight 5 -->
+                <div class="insight-card">
+                    <div class="insight-icon success">
+                        <i class="fas fa-thumbs-up"></i>
+                    </div>
+                    <h3>Success Opportunities</h3>
+                    <p><strong>1,028 low-risk users</strong> show stable behavior</p>
+                    <p class="insight-detail">Upselling and cross-selling opportunities for loyal customer base.</p>
+                </div>
+
+                <!-- Insight 6 -->
+                <div class="insight-card">
+                    <div class="insight-icon info">
+                        <i class="fas fa-lightbulb"></i>
+                    </div>
+                    <h3>Revenue Impact</h3>
+                    <p><strong>₹2.4M monthly</strong> at risk from churned users</p>
+                    <p class="insight-detail">Retention saves potential revenue loss. ROI positive on support costs.</p>
+                </div>
+            </div>
+
+            <!-- Recommendations Section -->
+            <div class="recommendations-section">
+                <h3>Strategic Recommendations</h3>
+                <div class="recommendations-list">
+                    <div class="recommendation-item">
+                        <span class="priority critical">Critical</span>
+                        <h4>Fix SBI Server Integration (21:00-22:00 peak)</h4>
+                        <p>SBI failures spike to 35+ per hour during dinner hours. Engage SBI for API stability, consider fallback routing.</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <span class="priority high">High</span>
+                        <h4>Launch Churn Recovery Campaign</h4>
+                        <p>247 churned users need immediate re-engagement: personalized SMS, 5% cashback incentive, white-glove support.</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <span class="priority high">High</span>
+                        <h4>Implement Predictive Alerts</h4>
+                        <p>Monitor high-risk users (156 users). Send proactive support when transaction fails. Prevent failed final transaction.</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <span class="priority medium">Medium</span>
+                        <h4>Optimize Load Balancing</h4>
+                        <p>Distribute traffic before peak hours (20:00). Implement circuit breaker for failing banks. Add retry logic with exponential backoff.</p>
+                    </div>
+                    <div class="recommendation-item">
+                        <span class="priority medium">Medium</span>
+                        <h4>Customer Segmentation Strategy</h4>
+                        <p>Tailor messaging: Low-risk → upsell | Medium → support | High-risk → retention focus.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reports Section -->
+    <section id="reports" class="reports-section">
+        <div class="container">
+            <h2 class="section-title">Reports & Exports</h2>
+
+            <div class="reports-grid">
+                <!-- Report Card 1 -->
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <h3>Churned Users Report</h3>
+                    <p>247 users who abandoned after final transaction failure</p>
+                    <div class="report-meta">
+                        <span>CSV Format</span>
+                        <span>247 Records</span>
+                    </div>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+
+                <!-- Report Card 2 -->
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <h3>High-Risk Users Report</h3>
+                    <p>156 users flagged for churn intervention</p>
+                    <div class="report-meta">
+                        <span>CSV Format</span>
+                        <span>156 Records</span>
+                    </div>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+
+                <!-- Report Card 3 -->
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-file-csv"></i>
+                    </div>
+                    <h3>Summary Statistics</h3>
+                    <p>Key metrics and performance indicators</p>
+                    <div class="report-meta">
+                        <span>CSV Format</span>
+                        <span>8 Metrics</span>
+                    </div>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+
+                <!-- Report Card 4 -->
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3>Executive Summary</h3>
+                    <p>Complete analysis with visualizations and recommendations</p>
+                    <div class="report-meta">
+                        <span>PDF Format</span>
+                        <span>12 Pages</span>
+                    </div>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+
+                <!-- Report Card 5 -->
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-file-pdf"></i>
+                    </div>
+                    <h3>Technical Rootcause Analysis</h3>
+                    <p>Bank performance, API stability, and peak hour analysis</p>
+                    <div class="report-meta">
+                        <span>PDF Format</span>
+                        <span>8 Pages</span>
+                    </div>
+                    <button class="download-btn">
+                        <i class="fas fa-download"></i> Download
+                    </button>
+                </div>
+
+                <!-- Report Card 6 -->
+                <div class="report-card">
+                    <div class="report-icon">
+                        <i class="fas fa-chart-bar"></i>
+                    </div>
+                    <h3>Custom Dashboard Export</h3>
+                    <p>Generate custom reports with selected metrics</p>
+                    <div class="report-meta">
+                        <span>Multiple Formats</span>
+                        <span>All Charts</span>
+                    </div>
+                    <button class="download-btn">
+                        <i class="fas fa-plus"></i> Create
+                    </button>
+                </div>
+            </div>
+
+            <!-- Report Scheduling -->
+            <div class="analytics-card">
+                <h3>Automated Report Scheduling</h3>
+                <div class="scheduling-form">
+                    <div class="form-group">
+                        <label>Frequency</label>
+                        <select>
+                            <option>Daily</option>
+                            <option>Weekly</option>
+                            <option>Monthly</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Report Type</label>
+                        <select>
+                            <option>Executive Summary</option>
+                            <option>Detailed Analysis</option>
+                            <option>Custom</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Email Recipients</label>
+                        <input type="email" placeholder="Enter email addresses (comma separated)">
+                    </div>
+                    <button class="submit-btn">Schedule Reports</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h4>About</h4>
+                <p>UPI Transaction Analytics provides real-time insights into payment failures and customer churn prediction using advanced data analysis.</p>
+            </div>
+            <div class="footer-section">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#analytics">Analytics</a></li>
+                    <li><a href="#reports">Reports</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Support</h4>
+                <ul>
+                    <li><a href="#">Documentation</a></li>
+                    <li><a href="#">Help Center</a></li>
+                    <li><a href="#">Contact Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h4>Follow Us</h4>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-github"></i></a>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 UPI Transaction Analytics. All rights reserved.</p>
+            <p>Last Updated: May 8, 2024 | Next Update: May 9, 2024</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
